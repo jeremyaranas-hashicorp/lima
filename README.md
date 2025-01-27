@@ -5,10 +5,10 @@ This reproduction will deploy a local Ubuntu instance on MacOS using [Lima](http
 2. Exec into Ubuntu instance
    1. `limactl shell vault-1`
 3. Install Vault
-   1. `cd /Users/<your_user>/GitHub/jeremy/lima`
+   1. `cd /Users/jeremyaranas/GitHub/jeremy/lima`
    2. `./install-vault-1.sh`
 4. Init Vault
-   1. `cd /Users/<your_user>/GitHub/jeremy/lima`
+   1. `cd /Users/jeremyaranas/GitHub/jeremy/lima`
    2. `./init-vault-1.sh`
 5. Source environment variables
    1. `source vars-vault-1.sh`

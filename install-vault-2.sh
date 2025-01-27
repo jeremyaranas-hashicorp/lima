@@ -48,18 +48,18 @@ storage "raft" {
 
   retry_join {
     leader_api_addr = "https://192.168.104.1:8200"
-    leader_client_cert_file = "/Users/jeremyaranas/GitHub/jeremy/lima-vault/certs/vault.pem"
-    leader_client_key_file = "/Users/jeremyaranas/GitHub/jeremy/lima-vault/certs/vault.key"
+    leader_client_cert_file = "/Users/jeremyaranas/GitHub/jeremy/lima/certs/vault.pem"
+    leader_client_key_file = "/Users/jeremyaranas/GitHub/jeremy/lima/certs/vault.key"
   }
   retry_join {
     leader_api_addr = "https://192.168.104.3:8200"
-    leader_client_cert_file = "/Users/jeremyaranas/GitHub/jeremy/lima-vault/certs/vault.pem"
-    leader_client_key_file = "/Users/jeremyaranas/GitHub/jeremy/lima-vault/certs/vault.key"
+    leader_client_cert_file = "/Users/jeremyaranas/GitHub/jeremy/lima/certs/vault.pem"
+    leader_client_key_file = "/Users/jeremyaranas/GitHub/jeremy/lima/certs/vault.key"
   }
   retry_join {
     leader_api_addr = "https://192.168.104.4:8200"
-    leader_client_cert_file = "/Users/jeremyaranas/GitHub/jeremy/lima-vault/certs/vault.pem"
-    leader_client_key_file = "/Users/jeremyaranas/GitHub/jeremy/lima-vault/certs/vault.key"
+    leader_client_cert_file = "/Users/jeremyaranas/GitHub/jeremy/lima/certs/vault.pem"
+    leader_client_key_file = "/Users/jeremyaranas/GitHub/jeremy/lima/certs/vault.key"
   }
 }
 
@@ -67,8 +67,8 @@ listener "tcp" {
   address     = "192.168.104.3:8200"
   cluster_address     = "192.168.104.3:8201"
   tls_disable = false
-  tls_cert_file = "/Users/jeremyaranas/GitHub/jeremy/lima-vault/certs/vault.pem"
-  tls_key_file = "/Users/jeremyaranas/GitHub/jeremy/lima-vault/certs/vault.key"
+  tls_cert_file = "/Users/jeremyaranas/GitHub/jeremy/lima/certs/vault.pem"
+  tls_key_file = "/Users/jeremyaranas/GitHub/jeremy/lima/certs/vault.key"
 }
 
 license_path = "/opt/vault/vault.hclic"
@@ -115,5 +115,5 @@ sudo systemctl enable vault
 sudo systemctl start vault
 
 # Copy cert to cert store 
-sudo cp /Users/jeremyaranas/GitHub/jeremy/lima-vault/certs/myCA.pem /usr/local/share/ca-certificates/myCA.crt
+sudo cp /Users/jeremyaranas/GitHub/jeremy/lima/certs/myCA.pem /usr/local/share/ca-certificates/myCA.crt
 sudo update-ca-certificates
