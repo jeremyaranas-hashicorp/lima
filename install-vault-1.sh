@@ -4,6 +4,10 @@ echo "Enter Vault version (e.g. 1.18.3): "
 read VAULT_VERSION
 export VAULT_VERSION=$VAULT_VERSION
 
+echo "Enter local path to Lima repo (e.g. /Users/jeremyaranas/GitHub/jeremy/lima): "
+read LIMA_DIR
+export LIMA_DIR=$LIMA_DIR
+
 # Download and install Vault
 cd ~
 curl -o vault.zip https://releases.hashicorp.com/vault/${VAULT_VERSION}+ent/vault_${VAULT_VERSION}+ent_linux_arm64.zip
@@ -48,18 +52,18 @@ storage "raft" {
 
   retry_join {
     leader_api_addr = "https://192.168.104.1:8200"
-    leader_client_cert_file = "/Users/jeremyaranas/GitHub/jeremy/lima/certs/vault.pem"
-    leader_client_key_file = "/Users/jeremyaranas/GitHub/jeremy/lima/certs/vault.key"
+    leader_client_cert_file = "$LIMA_DIR/certs/vault.pem"
+    leader_client_key_file = "$LIMA_DIR/certs/vault.key"
   }
   retry_join {
     leader_api_addr = "https://192.168.104.3:8200"
-    leader_client_cert_file = "/Users/jeremyaranas/GitHub/jeremy/lima/certs/vault.pem"
-    leader_client_key_file = "/Users/jeremyaranas/GitHub/jeremy/lima/certs/vault.key"
+    leader_client_cert_file = "$LIMA_DIR/certs/vault.pem"
+    leader_client_key_file = "$LIMA_DIR/certs/vault.key"
   }
   retry_join {
     leader_api_addr = "https://192.168.104.4:8200"
-    leader_client_cert_file = "/Users/jeremyaranas/GitHub/jeremy/lima/certs/vault.pem"
-    leader_client_key_file = "/Users/jeremyaranas/GitHub/jeremy/lima/certs/vault.key"
+    leader_client_cert_file = "$LIMA_DIR/certs/vault.pem"
+    leader_client_key_file = "$LIMA_DIR/certs/vault.key"
   }
 }
 
@@ -67,21 +71,16 @@ listener "tcp" {
   address     = "192.168.104.1:8200"
   cluster_address     = "192.168.104.1:8201"
   tls_disable = false
-  tls_cert_file = "/Users/jeremyaranas/GitHub/jeremy/lima/certs/vault.pem"
-  tls_key_file = "/Users/jeremyaranas/GitHub/jeremy/lima/certs/vault.key"
+  tls_cert_file = "$LIMA_DIR/certs/vault.pem"
+  tls_key_file = "$LIMA_DIR/certs/vault.key"
 }
 
-license_path = "/opt/vault/vault.hclic"
+license_path = "$LIMA_DIR/ent.hclic"
 api_addr = "https://192.168.104.1:8200"
 cluster_addr = "https://192.168.104.1:8201"
 disable_mlock = true
 ui=true
 log_level = "trace"
-EOF
-
-# Create license file
-sudo tee /opt/vault/vault.hclic <<EOF
-<your_license>
 EOF
 
 # Update permissions
@@ -115,5 +114,5 @@ sudo systemctl enable vault
 sudo systemctl start vault
 
 # Copy cert to cert store 
-sudo cp /Users/jeremyaranas/GitHub/jeremy/lima/certs/myCA.pem /usr/local/share/ca-certificates/myCA.crt
+sudo cp $LIMA_DIR/certs/myCA.pem /usr/local/share/ca-certificates/myCA.crt
 sudo update-ca-certificates
