@@ -8,11 +8,14 @@ echo "Enter local path to Lima repo (e.g. /Users/jeremyaranas/GitHub/jeremy/lima
 read LIMA_DIR
 export LIMA_DIR=$LIMA_DIR
 
+# Get IP of instance
+IP=$(ip addr show eth0 | grep inet | head -n 1 | awk '{print $2}' | cut -d/ -f1)
+
 # Download and install Vault
 cd ~
 curl -o vault.zip https://releases.hashicorp.com/vault/${VAULT_VERSION}+ent/vault_${VAULT_VERSION}+ent_linux_arm64.zip
 sudo apt install unzip -y
-unzip vault.zip 
+unzip vault.zip
 sudo mv vault /usr/local/bin/vault
 sudo mkdir /srv/vault
 
@@ -33,7 +36,7 @@ sudo adduser \
     --gecos "${USER_COMMENT}" \
     --shell /bin/false \
     ${USER_NAME}  >/dev/null
-  
+
 # Update permissions
 sudo chmod 0755 /usr/local/bin/vault
 sudo chown vault:vault /usr/local/bin/vault
@@ -49,35 +52,17 @@ sudo tee /etc/vault.d/vault.hcl <<EOF
 storage "raft" {
   path    = "/opt/vault/"
   node_id = "node-1"
-
-  retry_join {
-    leader_api_addr = "https://192.168.104.1:8200"
-    leader_client_cert_file = "$LIMA_DIR/certs/vault.pem"
-    leader_client_key_file = "$LIMA_DIR/certs/vault.key"
-  }
-  retry_join {
-    leader_api_addr = "https://192.168.104.3:8200"
-    leader_client_cert_file = "$LIMA_DIR/certs/vault.pem"
-    leader_client_key_file = "$LIMA_DIR/certs/vault.key"
-  }
-  retry_join {
-    leader_api_addr = "https://192.168.104.4:8200"
-    leader_client_cert_file = "$LIMA_DIR/certs/vault.pem"
-    leader_client_key_file = "$LIMA_DIR/certs/vault.key"
-  }
 }
 
 listener "tcp" {
-  address     = "192.168.104.1:8200"
-  cluster_address     = "192.168.104.1:8201"
-  tls_disable = false
-  tls_cert_file = "$LIMA_DIR/certs/vault.pem"
-  tls_key_file = "$LIMA_DIR/certs/vault.key"
+  address     = "0.0.0.0:8200"
+  cluster_address     = "0.0.0.0:8201"
+  tls_disable = true
 }
 
 license_path = "$LIMA_DIR/ent.hclic"
-api_addr = "https://192.168.104.1:8200"
-cluster_addr = "https://192.168.104.1:8201"
+api_addr = "https://$IP:8200"
+cluster_addr = "https://$IP:8201"
 disable_mlock = true
 ui=true
 log_level = "trace"
@@ -113,6 +98,14 @@ EOF
 sudo systemctl enable vault
 sudo systemctl start vault
 
-# Copy cert to cert store 
-sudo cp $LIMA_DIR/certs/myCA.pem /usr/local/share/ca-certificates/myCA.crt
-sudo update-ca-certificates
+sleep 5
+# Init Vault
+
+export VAULT_ADDR=http://$IP:8200
+vault operator init -format=json -key-shares=1 -key-threshold=1 > ~/init.json
+vault operator unseal $(jq -r ".unseal_keys_b64[]" ~/init.json)
+vault login $(cat ~/init.json | jq -r ".root_token")
+
+sudo touch /opt/vault/audit.log
+sudo chown vault:vault /opt/vault/audit.log
+vault audit enable file file_path=/opt/vault/audit.log
